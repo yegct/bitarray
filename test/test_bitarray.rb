@@ -103,4 +103,27 @@ class TestBitArrayWhenNonReversedByte < Minitest::Test
     ba[12] = 1
     assert_equal [1, 2, 5, 6, 7, 10, 12, 15], 0.upto(15).select { |i| ba[i] == 1 }
   end
+
+  def test_union_unequal_sizes
+    ba_lhs = BitArray.new(4)
+    ba_rhs = BitArray.new(5)
+
+    assert_raises ArgumentError do
+      ba_lhs | ba_rhs
+    end
+  end
+
+  def test_union
+    set_bits = [1, 5, 6, 7, 10, 16, 33].shuffle
+
+    ba_lhs = BitArray.new(35)
+    set_bits[0..3].each { |i| ba_lhs[i] = 1}
+    ba_rhs = BitArray.new(35)
+    # Deliberately overlap a little
+    set_bits[3..-1].each { |i| ba_rhs[i] = 1}
+    ba_expected = BitArray.new(35)
+    set_bits.each { |i| ba_expected[i] = 1}
+
+    assert_equal ba_lhs | ba_rhs, ba_expected
+  end
 end

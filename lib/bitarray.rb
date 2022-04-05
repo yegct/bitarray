@@ -25,6 +25,25 @@ class BitArray
     (@field.getbyte(position >> 3) & (1 << (byte_position(position) % 8))) > 0 ? 1 : 0
   end
 
+  def ==(rhs)
+    @size == rhs.size && @field == rhs.field
+  end
+
+  # Allows joining (union) two bitarrays of identical size.
+  # The resulting bitarray will contain any bit set in either constituent arrays.
+  # |= is implicitly defined, so you can do source_ba |= other_ba
+  def |(rhs)
+    raise ArgumentError.new("Bitarray sizes must be identical") if @size != rhs.size
+
+    combined = BitArray.new(@size, @field, reverse_byte: @reverse_byte)
+    rhs.field.each_byte.inject(0) do |byte_pos, byte|
+      combined.field.setbyte(byte_pos, combined.field.getbyte(byte_pos) | byte)
+      byte_pos + 1
+    end
+
+    combined
+  end
+
   # Iterate over each bit
   def each
     return to_enum(:each) unless block_given?
