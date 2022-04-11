@@ -1,4 +1,5 @@
 require "minitest/autorun"
+require "tempfile"
 require_relative "../lib/bitarray"
 
 class TestBitArray < Minitest::Test
@@ -78,6 +79,18 @@ class TestBitArray < Minitest::Test
     ba[5] = 1
     ba[9] = 1
     assert_equal 3, ba.total_set
+  end
+
+  def test_dump_load
+    ba_dump = BitArray.new(35)
+    [1, 5, 6, 7, 10, 16, 33].each { |i| ba_dump[i] = 1}
+    Tempfile.create("bitarray.dat") do |io|
+      ba_dump.dump(io)
+      io.rewind
+      ba_load = BitArray.load(io)
+
+      assert_equal ba_dump, ba_load
+    end
   end
 end
 

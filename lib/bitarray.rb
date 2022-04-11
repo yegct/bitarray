@@ -25,6 +25,10 @@ class BitArray
     (@field.getbyte(position >> 3) & (1 << (byte_position(position) % 8))) > 0 ? 1 : 0
   end
 
+  def ==(rhs)
+    @size == rhs.size && @field == rhs.field
+  end
+
   # Iterate over each bit
   def each
     return to_enum(:each) unless block_given?
@@ -55,5 +59,19 @@ class BitArray
 
   def byte_position(position)
     @reverse_byte ? position : 7 - position
+  end
+
+  # Save contents to an io device such as a file
+  def dump(io)
+    io.write([@size, @reverse_byte ? 1 : 0].pack("QC"))
+    io.write(@field.b)
+    io
+  end
+
+  # Load bitarray from an io device such as a file
+  def self.load(io)
+    size, reverse_byte = io.read(9).unpack("QC")
+    field = io.read
+    new(size, field, reverse_byte: reverse_byte == 1)
   end
 end
