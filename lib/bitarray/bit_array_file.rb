@@ -1,3 +1,8 @@
+require_relative "bit_array"
+
+# Read-only access to a BitArray dumped to disk.
+# This is considerably slower than using the RAM-based BitArray, but
+# avoids the memory requirements and initial setup time.
 class BitArrayFile
   HEADER_LENGTH = BitArray::HEADER_LENGTH
 
@@ -13,12 +18,8 @@ class BitArrayFile
     end
 
     @io.seek(0)
-    @size = @io.read(8).unpack("Q").first
-    @reverse_byte = @io.read(1).unpack("C").first == 1
-  end
-
-  private def seek_to(position)
-    @io.seek(position + HEADER_LENGTH)
+    @size, @reverse_byte = @io.read(9).unpack("QC")
+    @reverse_byte = @reverse_byte != 0
   end
 
   # Read a bit (1/0)
@@ -27,7 +28,11 @@ class BitArrayFile
     (@io.getbyte & (1 << (byte_position(position) % 8))) > 0 ? 1 : 0
   end
 
-  def byte_position(position)
+  private def byte_position(position)
     @reverse_byte ? position : 7 - position
+  end
+
+  private def seek_to(position)
+    @io.seek(position + HEADER_LENGTH)
   end
 end

@@ -1,9 +1,8 @@
 class BitArray
-  attr_reader :size
-  attr_reader :field
+  attr_reader :field, :reverse_byte, :size
   include Enumerable
 
-  VERSION = "1.3.0"
+  VERSION = "1.4.0"
   HEADER_LENGTH = 8 + 1 # QC
 
   def initialize(size, field = nil, reverse_byte: true)
@@ -27,7 +26,7 @@ class BitArray
   end
 
   def ==(rhs)
-    @size == rhs.size && @field == rhs.field
+    @size == rhs.size && @reverse_byte == rhs.reverse_byte && @field == rhs.field
   end
 
   # Allows joining (union) two bitarrays of identical size.
@@ -35,6 +34,7 @@ class BitArray
   # |= is implicitly defined, so you can do source_ba |= other_ba
   def |(rhs)
     raise ArgumentError.new("Bitarray sizes must be identical") if @size != rhs.size
+    raise ArgumentError.new("Reverse byte settings must be identical") if @reverse_byte != rhs.reverse_byte
 
     combined = BitArray.new(@size, @field, reverse_byte: @reverse_byte)
     rhs.field.each_byte.inject(0) do |byte_pos, byte|
@@ -73,7 +73,7 @@ class BitArray
     @field.each_byte.inject(0) { |a, byte| (a += 1; byte &= byte - 1) while byte > 0 ; a }
   end
 
-  def byte_position(position)
+  private def byte_position(position)
     @reverse_byte ? position : 7 - position
   end
 

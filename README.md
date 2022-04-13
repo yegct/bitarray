@@ -63,6 +63,7 @@ ba.to_s # "0000111111110000"
 
 
 ## History
+- 1.4 in 2022 (cleanups, add unions, dump/load, and BitArrayFile)
 - 1.3 in 2022 (cleanups and a minor perf tweak)
 - 1.2 in 2018 (Added option to skip reverse the bits for each byte by @dalibor)
 - 1.1 in 2018 (fixed a significant bug)
